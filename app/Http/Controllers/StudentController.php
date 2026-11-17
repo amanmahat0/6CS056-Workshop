@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\Student\StoreStudentRequest;
+use App\Http\Requests\Student\UpdateStudentRequest;
 
 class StudentController extends Controller
 {
@@ -20,9 +20,9 @@ class StudentController extends Controller
         return view('student.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreStudentRequest $request)
     {
-        $student = Student::create($request->validate($this->rules()));
+        $student = Student::create($request->validated());
 
         return redirect()
             ->route('students.index')
@@ -39,9 +39,9 @@ class StudentController extends Controller
         return view('student.edit', ['student' => $student]);
     }
 
-    public function update(Request $request, Student $student)
+    public function update(UpdateStudentRequest $request, Student $student)
     {
-        $student->update($request->validate($this->rules($student)));
+        $student->update($request->validated());
 
         return redirect()
             ->route('students.show', $student)
@@ -55,19 +55,5 @@ class StudentController extends Controller
         return redirect()
             ->route('students.index')
             ->with('success', 'Student deleted successfully!');
-    }
-
-    private function rules(?Student $student = null): array
-    {
-        return [
-            'name'          => 'required|string|max:255',
-            'email'         => [
-                'required', 'email', 'max:255',
-                Rule::unique('students')->ignore($student?->id),
-            ],
-            'phone'         => 'required|string|max:20',
-            'address'       => 'nullable|string|max:500',
-            'date_of_birth' => 'nullable|date',
-        ];
     }
 }

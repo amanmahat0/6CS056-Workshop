@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
-use Illuminate\Http\Request;
+use App\Http\Requests\Course\StoreCourseRequest;
+use App\Http\Requests\Course\UpdateCourseRequest;
 
 class CourseController extends Controller
 {
@@ -19,9 +20,9 @@ class CourseController extends Controller
         return view('course.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
-        $course = Course::create($this->validatedData($request));
+        $course = Course::create($request->validated());
 
         return redirect()
             ->route('courses.index')
@@ -38,9 +39,9 @@ class CourseController extends Controller
         return view('course.edit', ['course' => $course]);
     }
 
-    public function update(Request $request, Course $course)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
-        $course->update($this->validatedData($request));
+        $course->update($request->validated());
 
         return redirect()
             ->route('courses.show', $course)
@@ -54,17 +55,5 @@ class CourseController extends Controller
         return redirect()
             ->route('courses.index')
             ->with('success', 'Course deleted successfully!');
-    }
-
-    private function validatedData(Request $request): array
-    {
-        return $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'duration' => 'required|integer|min:1',
-            'fee' => 'required|numeric|min:0',
-            'difficulty' => 'required|in:Beginner,Intermediate,Advanced',
-            'is_active' => 'required|boolean',
-        ]);
     }
 }
