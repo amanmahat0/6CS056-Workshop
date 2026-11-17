@@ -1,59 +1,19 @@
-<!DOCTYPE html>
-<html>
+@extends('layouts.app')
 
-<head>
-    <title>Course Details</title>
-</head>
+@section('title', 'Course Details')
 
-<body>
+@section('content')
+    <x-page-header title="Course Details">
+        <a href="{{ route('courses.edit', $course) }}" class="btn">Edit Course</a>
+    </x-page-header>
 
-    <h1>Course Details</h1>
+    <x-detail-row label="ID">{{ $course->id }}</x-detail-row>
+    <x-detail-row label="Name">{{ $course->name }}</x-detail-row>
+    <x-detail-row label="Description">{{ $course->description }}</x-detail-row>
+    <x-detail-row label="Duration">{{ $course->duration }} weeks</x-detail-row>
+    <x-detail-row label="Fee">{{ number_format((float) $course->fee, 2) }}</x-detail-row>
+    <x-detail-row label="Difficulty">{{ $course->difficulty }}</x-detail-row>
+    <x-detail-row label="Active">{{ $course->is_active ? 'Yes' : 'No' }}</x-detail-row>
 
-    <p>
-        <strong>ID:</strong>
-        {{ $course->id }}
-    </p>
-
-    <p>
-        <strong>Name:</strong>
-        {{ $course->name }}
-    </p>
-
-    <p>
-        <strong>Description:</strong>
-        {{ $course->description }}
-    </p>
-
-    <p>
-        <strong>Duration:</strong>
-        {{ $course->duration }} weeks
-    </p>
-
-    <p>
-        <strong>Fee:</strong>
-        {{ $course->fee }}
-    </p>
-
-    <p>
-        <strong>Difficulty:</strong>
-        {{ $course->difficulty }}
-    </p>
-
-    <p>
-        <strong>Active:</strong>
-        {{ $course->is_active ? 'Yes' : 'No' }}
-    </p>
-
-    <a href="/courses/{{ $course->id }}/edit">
-        Edit Course
-    </a>
-
-    <br><br>
-
-    <a href="/courses">
-        Back to Courses
-    </a>
-
-</body>
-
-</html>
+    <a href="{{ route('courses.index') }}">Back to Courses</a>
+@endsection
