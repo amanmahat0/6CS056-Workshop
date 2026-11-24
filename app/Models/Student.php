@@ -26,4 +26,10 @@ class Student extends Model
     {
         return Attribute::get(fn () => $this->date_of_birth?->age);
     }
+
+
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
 }
