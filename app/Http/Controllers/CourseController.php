@@ -4,14 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('course.list', [
-            'courses' => Course::all(),
-        ]);
+        $courses = $request->user()->isAdmin()
+            ? Course::with('user')->latest()->get()
+            : $request->user()->courses()->latest()->get();
+
+        return view('course.list', ['courses' => $courses]);
     }
 
     public function create()
@@ -21,7 +25,10 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
-        $course = Course::create($this->validatedData($request));
+        // Owner is set from the logged-in user, never from the browser
+        $course = $request->user()->courses()->create(
+            $request->validate($this->rules())
+        );
 
         return redirect()
             ->route('courses.index')
@@ -30,17 +37,23 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
+        Gate::authorize('manage-course', $course);
+
         return view('course.detail', ['course' => $course]);
     }
 
     public function edit(Course $course)
     {
+        Gate::authorize('manage-course', $course);
+
         return view('course.edit', ['course' => $course]);
     }
 
     public function update(Request $request, Course $course)
     {
-        $course->update($this->validatedData($request));
+        Gate::authorize('manage-course', $course);
+
+        $course->update($request->validate($this->rules()));
 
         return redirect()
             ->route('courses.show', $course)
@@ -49,6 +62,8 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
+        Gate::authorize('manage-course', $course);
+
         $course->delete();
 
         return redirect()
@@ -56,15 +71,15 @@ class CourseController extends Controller
             ->with('success', 'Course deleted successfully!');
     }
 
-    private function validatedData(Request $request): array
+    private function rules(): array
     {
-        return $request->validate([
-            'name' => 'required|string|max:255',
+        return [
+            'name'        => 'required|string|max:255',
             'description' => 'required|string|max:255',
-            'duration' => 'required|integer|min:1',
-            'fee' => 'required|numeric|min:0',
-            'difficulty' => 'required|in:Beginner,Intermediate,Advanced',
-            'is_active' => 'required|boolean',
-        ]);
+            'duration'    => 'required|integer|min:1',
+            'fee'         => 'required|numeric|min:0',
+            'difficulty'  => ['required', Rule::in(['Beginner', 'Intermediate', 'Advanced'])],
+            'is_active'   => 'boolean',
+        ];
     }
 }
